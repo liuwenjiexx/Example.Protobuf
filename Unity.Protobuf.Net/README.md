@@ -88,17 +88,16 @@ using (var ms = new MemoryStream(data))
  样例位置 `Assets/Example/02_Protobuf`
 
 1. **定义 `.proto` 协议文件**
-  位置 `../Proto`
-  `CS_Login.proto`
+    位置 `../Proto`
+    `CS_Login.proto`
 
    ```protobuf
-  syntax = "proto3";
-  package Example;
-  
-  message CS_Login {
-      string userName=1;
-      string userPwd=2;
-  }
+   syntax = "proto3";
+   package Example;
+   message CS_Login {
+        string userName=1;
+        string userPwd=2;
+   }
    ```
 
 2. 生成 `Assets/Plugins/Proto.dll`，运行 `Tools/Build_Proto_CSharp.bat` 命令
