@@ -1,0 +1,12 @@
+/Library
+.vs/
+obj/
+bin/
+/Temp
+/.vsconfig
+/*.sln
+/*.csproj
+/UserSettings
+/ProjectSettings
+/Packages
+/Build

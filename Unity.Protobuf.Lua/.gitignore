@@ -1,0 +1,14 @@
+/.vsconfig
+.vs/
+/*.csproj
+/*.sln
+/Library/
+/obj/
+/packages/packages-lock.json
+/packages/manifest.json
+/ProjectSettings/
+/Temp/
+/Logs/
+Gen/
+Gen.meta
+/UserSettings

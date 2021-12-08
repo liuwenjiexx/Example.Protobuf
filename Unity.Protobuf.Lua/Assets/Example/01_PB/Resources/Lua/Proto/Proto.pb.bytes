@@ -1,0 +1,11 @@
+
+c
+CS_Login.protoExample"@
+CS_Login
+userName (	RuserName
+userPwd (	RuserPwdbproto3
+m
+SC_Login.protoExample"J
+SC_Login
+	errorCode (R	errorCode 
+accessToken (	RaccessTokenbproto3
