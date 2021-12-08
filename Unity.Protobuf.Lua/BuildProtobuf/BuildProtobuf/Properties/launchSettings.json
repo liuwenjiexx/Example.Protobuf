@@ -2,7 +2,7 @@
   "profiles": {
     "BuildProtobuf": {
       "commandName": "Project",
-      "commandLineArgs": "-protoc=\"../..\\..\\..\\..\\Tools/protoc.exe\" -source=\"..\\..\\..\\..\\..\\..\\Proto\" -pb=\"..\\..\\..\\..\\..\\Assets\\Example\\01_PB\\Resources\\Lua\\Proto\\Proto.pb.bytes\" -lua=\"..\\..\\..\\..\\Assets\\Example\\02_Name\\Resources\\Lua\\Proto\\Proto.lua\""
+      "commandLineArgs": "-protoc=\"../..\\..\\..\\..\\Tools/protoc.exe\" -source=\"..\\..\\..\\..\\..\\..\\Proto\" -pb=\"..\\..\\..\\..\\..\\Assets\\Example\\01_PB\\Resources\\Lua\\Proto\\Proto.pb.bytes\" -lua=\"..\\..\\..\\..\\..\\Assets\\Example\\03_Protobuf\\Resources\\Lua\\Proto\\Proto.lua\""
     }
   }
 }

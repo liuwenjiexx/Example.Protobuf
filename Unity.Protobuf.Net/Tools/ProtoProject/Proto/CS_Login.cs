@@ -26,6 +26,15 @@ namespace Example
 
     }
 
+    [global::ProtoBuf.ProtoContract()]
+    public enum MessageID
+    {
+        [global::ProtoBuf.ProtoEnum(Name = @"CS_Login")]
+        CSLogin = 10001,
+        [global::ProtoBuf.ProtoEnum(Name = @"SC_Login")]
+        SCLogin = 10002,
+    }
+
 }
 
 #pragma warning restore CS0612, CS0618, CS1591, CS3021, IDE0079, IDE1006, RCS1036, RCS1057, RCS1085, RCS1192

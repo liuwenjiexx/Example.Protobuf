@@ -19,13 +19,10 @@ namespace BuildProtobuf
         public static string ProtocPath;
         public static string OutputPbFile;
         public static string DataFile = "proto.txt";
-        //public static string ClientToServerDir = "CS";
-        //public static string ServerToClientDir = "SC";
         public static string LuaFile = "Proto.lua";
         public static bool ResetID = false;
         public static int AutoID = 10000;
-        //public static string MsgCSTypePattern = "^CS_.+";
-        //public static string MsgSCTypePattern = "^SC_.+";
+        public static string MessageIDEnumName = "MessageID";
 
         /// <summary>
         /// 正则表达式
@@ -46,10 +43,9 @@ namespace BuildProtobuf
                 TryGetArg(dic, "-source", ref SourceDir);
                 TryGetArg(dic, "-extension", ref Extension);
                 TryGetArg(dic, "-protoc", ref ProtocPath);
-                //TryGetArg(dic, "-SC", ref ServerToClientDir);
-                //TryGetArg(dic, "-CS", ref ClientToServerDir);
                 TryGetArg(dic, "-msg", ref MsgPattern);
-                // TryGetArg(dic, "-Lua", ref LuaFile);
+                TryGetArg(dic, "-msg_id_enum", ref MessageIDEnumName);
+
 
                 string str = null;
                 if (TryGetArg(dic, "-AutoID", ref str))
@@ -69,14 +65,14 @@ namespace BuildProtobuf
 
                 var messages = LoadMessages(fullSrcDir);
 
-                foreach (var file in messages.Select(o => o.Path).Distinct())
+                foreach (var file in messages.Select(o => o.PackageInfo.Path).Distinct())
                 {
                     Console.WriteLine(file);
                 }
 
                 if (TryGetArg(dic, "-pb", ref OutputPbFile))
                 {
-                    BuildProtoPB(messages.Select(o => o.Path).Distinct(), fullSrcDir, OutputPbFile);
+                    BuildProtoPB(messages.Select(o => o.PackageInfo.Path).Distinct(), fullSrcDir, OutputPbFile);
                 }
 
                 if (TryGetArg(dic, "-lua", ref LuaFile))
@@ -157,17 +153,38 @@ namespace BuildProtobuf
             }
 
             List<ProtoMessageInfo> messages = new List<ProtoMessageInfo>();
+            List<ProtoEnumInfo> enums = new List<ProtoEnumInfo>();
+            Console.WriteLine("Message pattern: " + MsgPattern);
+
             foreach (var msg in FindProtoFiles(dir, filter))
             {
                 //msg.IsClientToServer = true;
-                messages.Add(msg);
+                if (msg is ProtoMessageInfo)
+                {
+                    messages.Add((ProtoMessageInfo)msg);
+                }
+                else if (msg is ProtoEnumInfo)
+                {
+                    enums.Add((ProtoEnumInfo)msg);
+                }
             }
 
-            //foreach (var msg in FindProtoFiles(Path.Combine(dir, ServerToClientDir), filter))
-            //{
-            //    msg.IsClientToServer = false;
-            //    messages.Add(msg);
-            //}
+
+            if (!string.IsNullOrEmpty(MessageIDEnumName))
+            {
+                Console.WriteLine("MessageID enum pattern: " + MessageIDEnumName);
+                foreach (var idEnum in enums.Where(o => Regex.IsMatch(o.Name, MessageIDEnumName, RegexOptions.IgnoreCase)))
+                {
+                    idEnum.Calculate();
+                    foreach (var item in idEnum.Values)
+                    {
+                        string key = item.Key;
+                        if (!string.IsNullOrEmpty(idEnum.PackageInfo.PackageName))
+                            key = idEnum.PackageInfo.PackageName + "." + key;
+                        oldIds[key] = item.Value;
+                    }
+                }
+            }
 
             if (oldIds.Count > 0)
             {
@@ -209,7 +226,7 @@ namespace BuildProtobuf
 
             return messages;
         }
-        static IEnumerable<ProtoMessageInfo> FindProtoFiles(string dir, string filter)
+        static IEnumerable<object> FindProtoFiles(string dir, string filter)
         {
             string fullDir = Path.GetFullPath(dir);
 
@@ -217,10 +234,19 @@ namespace BuildProtobuf
             {
                 foreach (var file in Directory.GetFiles(fullDir, filter, SearchOption.AllDirectories))
                 {
-                    foreach (var msg in ProtoMessageInfo.Parse(File.ReadAllText(file, Encoding.UTF8)))
+                    string text = File.ReadAllText(file, Encoding.UTF8);
+
+                    ProtoPackageInfo packageInfo = ProtoPackageInfo.Parse(text);
+                    packageInfo.Path = file;
+
+                    foreach (var msg in ProtoMessageInfo.Parse(packageInfo, text))
                     {
-                        msg.Path = file;
                         yield return msg;
+                    }
+
+                    foreach (var enumInfo in ProtoEnumInfo.Parse(packageInfo, text))
+                    {
+                        yield return enumInfo;
                     }
                 }
             }
@@ -250,7 +276,7 @@ namespace BuildProtobuf
 
             if (string.IsNullOrEmpty(pbcPath))
                 throw new Exception("Protoc file not exists.");
-            Console.WriteLine(pbcPath);
+            Console.WriteLine("pbc: " + pbcPath);
 
             outputPath = Path.GetFullPath(outputPath);
 
@@ -319,7 +345,7 @@ namespace BuildProtobuf
                 string packageName;
 
                 var first = messages.First();
-                packageName = first.PackageName;
+                packageName = first.PackageInfo.PackageName;
                 sb.AppendLine("-- ***该文件为自动生成的***");
 
                 sb.AppendLine($"local package = \"{packageName}\"");
@@ -410,27 +436,21 @@ namespace BuildProtobuf
 
     }
 
-
-    class ProtoMessageInfo
+    class ProtoPackageInfo
     {
-        public string PackageName;
-        public string Name;
-        public string FullName;
-        public string UsedName;
         public int Version;
-        public int id;
-        public int index;
-        public bool IsClientToServer;
+        public string PackageName;
         public string Path;
-
         static Regex regexVersion = new Regex("syntax\\s*=\\s*\"proto(?<Version>[^\"]+)");
         static Regex regexPackage = new Regex("package\\s*(?<Name>[^\\s;]+)");
-        static Regex regexMessage = new Regex("^\\s*message\\s+(?<Name>[^\\s\\{]+)", RegexOptions.Multiline);
 
-        public static IEnumerable<ProtoMessageInfo> Parse(string text)
+        public static ProtoPackageInfo Parse(string text)
         {
-            int version = 3;
-            string packageName = "";
+            ProtoPackageInfo packageInfo = new ProtoPackageInfo()
+            {
+                Version = 3,
+                PackageName = string.Empty
+            };
 
             var m = regexVersion.Match(text);
 
@@ -438,16 +458,38 @@ namespace BuildProtobuf
             {
                 if (int.TryParse(m.Groups["Version"].Value, out var n))
                 {
-                    version = n;
+                    packageInfo.Version = n;
                 }
             }
-
             m = regexPackage.Match(text);
 
             if (m.Success)
             {
-                packageName = m.Groups["Name"].Value;
+                packageInfo.PackageName = m.Groups["Name"].Value;
             }
+            return packageInfo;
+        }
+
+    }
+
+    class ProtoMessageInfo
+    {
+        public ProtoPackageInfo PackageInfo;
+        public string Name;
+        public string FullName;
+        public string UsedName;
+        public int id;
+        public int index;
+        public bool IsClientToServer;
+
+
+        static Regex regexMessage = new Regex("^\\s*message\\s+(?<Name>[^\\s\\{]+)", RegexOptions.Multiline);
+
+
+        public static Regex regexKeyValue = new Regex("\\s*(?<key>\\S+)\\s*(=\\s*(?<value>[^\\s;]+))?\\s*;");
+
+        public static IEnumerable<ProtoMessageInfo> Parse(ProtoPackageInfo package, string text)
+        {
             Regex msgRegex = null;
             if (string.IsNullOrEmpty(Program.MsgPattern))
                 throw new Exception($"{nameof(Program.MsgPattern)} empty");
@@ -459,13 +501,12 @@ namespace BuildProtobuf
                 ProtoMessageInfo msg = new ProtoMessageInfo()
                 {
                     Name = m1.Groups["Name"].Value,
-                    PackageName = packageName,
-                    Version = version,
+                    PackageInfo = package,
 
                 };
-                if (!string.IsNullOrEmpty(packageName))
+                if (!string.IsNullOrEmpty(package.PackageName))
                 {
-                    msg.FullName = msg.PackageName + "." + msg.Name;
+                    msg.FullName = package.PackageName + "." + msg.Name;
                 }
                 else
                 {
@@ -491,6 +532,76 @@ namespace BuildProtobuf
                 yield return msg;
 
             }
+
         }
     }
+
+    class ProtoEnumInfo
+    {
+        public ProtoPackageInfo PackageInfo;
+        public string Name;
+        public string UsedName;
+        public string FullName;
+        static Regex regexEnum = new Regex("enum\\s+(?<name>\\S+)\\s+\\{(?<content>[^}]+)\\}");
+
+        public List<(string, string)> RawValues = new List<(string, string)>();
+
+        public Dictionary<string, int> Values = new Dictionary<string, int>();
+
+        public void Calculate()
+        {
+            Values.Clear();
+            int lastId = 0;
+            foreach (var item in RawValues)
+            {
+                int id;
+                string key = item.Item1;
+                string strValue = item.Item2;
+                if (string.IsNullOrEmpty(strValue))
+                {
+                    id = lastId + 1;
+                }
+                else
+                {
+                    if (!int.TryParse(strValue, out id))
+                    {
+
+                    }
+                }
+                Values[key] = id;
+                lastId = id;
+            }
+
+        }
+
+        public static IEnumerable<ProtoEnumInfo> Parse(ProtoPackageInfo package, string text)
+        {
+
+            foreach (Match m1 in regexEnum.Matches(text))
+            {
+                string name = m1.Groups["name"].Value;
+                ProtoEnumInfo enumInfo = new ProtoEnumInfo();
+                enumInfo.Name = name;
+                enumInfo.PackageInfo = package;
+                if (!string.IsNullOrEmpty(package.PackageName))
+                {
+                    enumInfo.FullName = package.PackageName + "." + enumInfo.Name;
+                }
+                else
+                {
+                    enumInfo.FullName = enumInfo.Name;
+                }
+                enumInfo.UsedName = enumInfo.Name;
+                foreach (Match m2 in ProtoMessageInfo.regexKeyValue.Matches(m1.Groups["content"].Value))
+                {
+                    string key = m2.Groups["key"].Value;
+                    string value = m2.Groups["value"].Value;
+                    enumInfo.RawValues.Add((key, value));
+                }
+
+                yield return enumInfo;
+            }
+        }
+    }
+
 }

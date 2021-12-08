@@ -118,5 +118,5 @@ using (var ms = new MemoryStream(data))
    }
    ```
 
-3. 运行 `02_Protobuf`测试场景
+3. 运行 `02_Protobuf` 测试场景
 
