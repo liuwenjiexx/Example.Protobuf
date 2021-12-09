@@ -312,4 +312,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22863571dcf53ed4fa9f3c3c382627b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainLua: Example_Protobuf
+  mainLua: Example_MsgId

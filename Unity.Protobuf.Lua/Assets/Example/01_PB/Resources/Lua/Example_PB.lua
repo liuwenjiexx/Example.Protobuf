@@ -16,8 +16,8 @@ local data = {
 
 
 
-local chunk2, _ = pb.encode("Example.CS_Login", data)
-print('encode', chunk2)
+local chunk, _ = pb.encode("Example.CS_Login", data)
+print('encode', chunk)
 
-local data2 = pb.decode("Example.CS_Login", chunk2)
-print('decode', data2.userName, data2.userPwd)
+local data = pb.decode("Example.CS_Login", chunk)
+print('decode', data.userName, data.userPwd)
