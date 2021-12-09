@@ -53,8 +53,7 @@
    ```tex
    Assets\Example\01_PB\Resources\Lua\Proto\Proto.pb.bytes
    ```
-
-
+   
 3. `LuaEnv` 注册 `protobuf` `pb` 模块
 
     ```c#
@@ -75,7 +74,7 @@
     ```
 
     注册加载 `pb` 方法
-    
+
     ```c#
     luaEnv.AddBuildin("pb", LoadPb);
     ```
@@ -204,6 +203,8 @@
    }
    }
    ```
+
+   定制数据格式需要修改 `BuildProtobuf.exe` ，源代码位置：`BuildProtobuf`
 
 3. 初始化，`LuaProtoBuf` 封装了 `MsgId` 的序列化
 
