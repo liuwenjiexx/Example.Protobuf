@@ -41,7 +41,6 @@
        string userPwd = 2;
    }
    ```
-```
    
    CS: Client To Server
    
@@ -53,7 +52,8 @@
 
    ```tex
    Assets\Example\01_PB\Resources\Lua\Proto\Proto.pb.bytes
-```
+   ```
+
 
 3. `LuaEnv` 注册 `protobuf` `pb` 模块
 
@@ -75,7 +75,7 @@
     ```
 
     注册加载 `pb` 方法
-
+    
     ```c#
     luaEnv.AddBuildin("pb", LoadPb);
     ```
@@ -162,7 +162,7 @@
    }
    ```
 
-2. 运行 `Tools/BuildProtoLua.bat` 生成 `Proto.lua` 消息ID格式文件
+2. 运行 `Tools/BuildProtoLua.bat` 生成 `Proto.lua` 消息ID和消息名称的映射数据
 
    **生成**
 
