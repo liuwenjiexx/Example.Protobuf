@@ -1,6 +1,4 @@
-# Protobuf-net
-
-[Protobuf-net 仓库](https://github.com/protobuf-net/protobuf-net) 
+# Protobuf Lua
 
 ## 环境
 
@@ -42,6 +40,7 @@
        string userName = 1;
        string userPwd = 2;
    }
+   ```
 ```
    
    CS: Client To Server
@@ -54,7 +53,7 @@
 
    ```tex
    Assets\Example\01_PB\Resources\Lua\Proto\Proto.pb.bytes
-   ```
+```
 
 3. `LuaEnv` 注册 `protobuf` `pb` 模块
 
