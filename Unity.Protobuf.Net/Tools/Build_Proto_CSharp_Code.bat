@@ -1,12 +1,8 @@
 @rem echo off
 setlocal EnableDelayedExpansion
 
-set MSBuild="%VisualStudio%\MSBuild\Current\Bin\MSBuild.exe"
-set PROTO_SRC=..\..\Proto
+set PROTO_SRC=.\Proto
 set CSHARP_OUT=%cd%\ProtoProject\Proto
-set CSHARP_PROJ_DIR=ProtoProject
-set CSHARP_PROJ=%CSHARP_PROJ_DIR%\ProtoProject.csproj
-set PROTO_DST=..\Assets\Plugins\Proto.dll
 
 if exist "%CSHARP_OUT%" (rmdir /Q /S "%CSHARP_OUT%")
 mkdir "%CSHARP_OUT%"
@@ -24,8 +20,5 @@ echo Proto files=%PROTO_FILES%
 protogen --csharp_out="%CSHARP_OUT%" %PROTO_FILES%
 
 popd
-
-%MSBuild% %CSHARP_PROJ% /property:Configuration=Release
-copy /Y %CSHARP_PROJ_DIR%\bin\Release\Proto.dll %PROTO_DST%
 
 pause
