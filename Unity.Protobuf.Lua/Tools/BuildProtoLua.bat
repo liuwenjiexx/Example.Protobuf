@@ -1,9 +1,9 @@
 @echo off
 @rem Unity 工程目录
-set UNITY_PROJ=..\..\
+set UNITY_PROJ=%cd%\..\
 @rem 协议源文件目录
 set PROTO_DIR=%UNITY_PROJ%\..\Proto
-set LUA_DIR=%UNITY_PROJ%\Assets\Example\03_Protobuf\Resources\Lua\Proto
+set LUA_DIR=%UNITY_PROJ%\Assets\Example\03_MsgId\Resources\Lua\Proto
 @rem 输出 pb 文件位置
 set PB_FILE=%LUA_DIR%\Proto.pb.bytes
 @rem 输出 Proto.lua 位置
@@ -24,3 +24,5 @@ set MSG="(^|\.)(((?<cs>CS)|(?<sc>SC))_)?(?<name>[^\.]+)$"
 cd BuildProtobuf
 
 BuildProtobuf.exe -protoc="..\protoc.exe" -source="%PROTO_DIR%" -pb="%PB_FILE%" -lua="%LUA_FILE%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -extension="%EXTENSION%"
+
+pause

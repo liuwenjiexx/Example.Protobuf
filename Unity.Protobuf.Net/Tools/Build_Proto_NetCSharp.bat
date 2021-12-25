@@ -49,4 +49,5 @@ popd
 
 %MSBuild% %CSHARP_PROJ% /property:Configuration=Release
 copy /Y %CSHARP_PROJ_DIR%\bin\Release\Proto.dll %UNITY_PROJ_DIR%\Assets\Plugins\Proto.dll
+
 pause
