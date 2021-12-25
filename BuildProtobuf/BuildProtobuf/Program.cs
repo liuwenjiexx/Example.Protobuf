@@ -5,14 +5,17 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Xsl;
 
 namespace BuildProtobuf
 {
-    public class Program
+    public partial class Program
     {
         public static string SourceDir = "./";
         public static string Extension = ".proto";
         public static string OutputLuaDir;
+        public static string OutputCSharpDir;
         /// <summary>
         ///  protoc.exe
         /// </summary>
@@ -22,7 +25,8 @@ namespace BuildProtobuf
         public static string LuaFile = "Proto.lua";
         public static bool ResetID = false;
         public static int AutoID = 10000;
-        public static string MessageIDEnumName = "MessageID";
+        public static string MessageIDEnumNamePattern = "MessageID";
+        public static string CSharpMsgIdsClassName = "MsgIds";
 
         /// <summary>
         /// 正则表达式
@@ -44,7 +48,7 @@ namespace BuildProtobuf
                 TryGetArg(dic, "-extension", ref Extension);
                 TryGetArg(dic, "-protoc", ref ProtocPath);
                 TryGetArg(dic, "-msg", ref MsgPattern);
-                TryGetArg(dic, "-msg_id_enum", ref MessageIDEnumName);
+                TryGetArg(dic, "-msg_id_enum", ref MessageIDEnumNamePattern);
 
 
                 string str = null;
@@ -84,6 +88,14 @@ namespace BuildProtobuf
 
                 }
 
+                if (TryGetArg(dic, "-netcsharp", ref OutputCSharpDir))
+                {
+                    TryGetArg(dic, "-msgid", ref CSharpMsgIdsClassName);
+                    BuildProtoNetCSharp(messages, Path.Combine(OutputCSharpDir, CSharpMsgIdsClassName + ".cs"));
+
+                }
+
+
                 StringBuilder sb = new StringBuilder();
                 foreach (var msg in messages)
                 {
@@ -100,7 +112,7 @@ namespace BuildProtobuf
             {
                 Console.WriteLine(ex);
             }
-            Console.ReadKey();
+           // Console.ReadKey();
         }
 
         static bool TryGetArg(Dictionary<string, string> args, string key, ref string value)
@@ -170,10 +182,10 @@ namespace BuildProtobuf
             }
 
 
-            if (!string.IsNullOrEmpty(MessageIDEnumName))
+            if (!string.IsNullOrEmpty(MessageIDEnumNamePattern))
             {
-                Console.WriteLine("MessageID enum pattern: " + MessageIDEnumName);
-                foreach (var idEnum in enums.Where(o => Regex.IsMatch(o.Name, MessageIDEnumName, RegexOptions.IgnoreCase)))
+                Console.WriteLine("MessageID enum pattern: " + MessageIDEnumNamePattern);
+                foreach (var idEnum in enums.Where(o => Regex.IsMatch(o.Name, MessageIDEnumNamePattern, RegexOptions.IgnoreCase)))
                 {
                     idEnum.Calculate();
                     foreach (var item in idEnum.Values)
@@ -434,6 +446,86 @@ namespace BuildProtobuf
             sb.AppendLine("}");
         }
 
+        static void CreateMessageNode(XmlElement parent, IEnumerable<ProtoMessageInfo> messages)
+        {
+            var doc = parent.OwnerDocument;
+            var msgsNode = doc.CreateElement("Messages");
+            XmlElement tmp;
+            foreach (var msg in messages)
+            {
+                var msgNode = doc.CreateElement("Message");
+
+                tmp = doc.CreateElement("Name");
+                tmp.InnerText = msg.Name;
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("FullName");
+                tmp.InnerText = msg.FullName;
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("UsedName");
+                tmp.InnerText = msg.UsedName;
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("Id");
+                tmp.InnerText = msg.id.ToString();
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("TypeName");
+                tmp.InnerText = msg.TypeName;
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("ClientToServer");
+                tmp.InnerText = msg.IsClientToServer.ToString().ToLower();
+                msgNode.AppendChild(tmp);
+
+                msgsNode.AppendChild(msgNode);
+            }
+            parent.AppendChild(msgsNode);
+        }
+
+        static void TransformXsl(IEnumerable<ProtoMessageInfo> messages, string xslXml, XsltArgumentList args, string outputPath)
+        {
+            using (var sr = new StringReader(xslXml))
+            using (var reader = XmlReader.Create(sr))
+            {
+                TransformXsl(messages, reader, args, outputPath);
+            }
+        }
+
+        static void TransformXsl(IEnumerable<ProtoMessageInfo> messages, XmlReader xslReader, XsltArgumentList args, string outputPath)
+        {
+            var transform = new XslCompiledTransform();
+            transform.Load(xslReader);
+            XmlDocument input = new XmlDocument();
+            var root = input.CreateElement("Protobuf");
+            input.AppendChild(root);
+
+            int count = messages.Count();
+            var mapIndex = new Dictionary<ProtoMessageInfo, int>();
+
+            if (count > 0)
+            {
+                string packageName;
+
+                var first = messages.First();
+                packageName = first.PackageInfo.PackageName;
+                var pkgNameNode = input.CreateElement("PackageName");
+                pkgNameNode.InnerText = packageName;
+                root.AppendChild(pkgNameNode);
+            }
+
+            CreateMessageNode(root, messages);
+
+            if (!Directory.Exists(Path.GetDirectoryName(outputPath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            using (var output = new FileStream(outputPath, FileMode.Create, FileAccess.Write))
+            {
+                transform.Transform(input.CreateNavigator(), args, output);
+            }
+        }
+
+
     }
 
     class ProtoPackageInfo
@@ -481,6 +573,7 @@ namespace BuildProtobuf
         public int id;
         public int index;
         public bool IsClientToServer;
+        public string TypeName;
 
 
         static Regex regexMessage = new Regex("^\\s*message\\s+(?<Name>[^\\s\\{]+)", RegexOptions.Multiline);
@@ -527,7 +620,7 @@ namespace BuildProtobuf
                 if (string.IsNullOrEmpty(msg.UsedName))
                     msg.UsedName = msg.FullName;
 
-
+                msg.TypeName = msg.Name;
 
                 yield return msg;
 

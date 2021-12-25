@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <StartupObject>BuildProtobuf.Program</StartupObject>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="Copy &quot;$(OutDir)\$(TargetName).exe&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).exe&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).dll&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).runtimeconfig.json&quot;&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).exe&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).exe&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).dll&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).runtimeconfig.json&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <None Remove="xslt\MsgIds.xslt" />
+    <None Remove="xslt\netcsharp\MsgIds.xslt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="xslt\netcsharp\MsgIds.xslt" />
+  </ItemGroup>
+
+</Project>

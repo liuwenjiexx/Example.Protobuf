@@ -16,6 +16,8 @@
 
 ### 安装生成协议命令
 
+[Protogen](https://www.nuget.org/packages/protobuf-net.Protogen) 生成代码工具
+
 ```sh
 dotnet tool install --global protobuf-net.Protogen --version 3.0.101
 ```

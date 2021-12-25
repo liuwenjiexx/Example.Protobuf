@@ -1,0 +1,4 @@
+/bin
+/obj
+/.vs
+/BuildProtobuf.csproj.user
