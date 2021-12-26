@@ -1,7 +1,9 @@
 @echo off
 setlocal EnableDelayedExpansion
 @rem Unity 工程目录
-set UNITY_PROJ_DIR=%cd%\..\
+set UNITY_PROJ_DIR=%cd%\..
+set PROJ_TOOLS_DIR=%UNITY_PROJ_DIR%\Tools
+set BUILDPROTOBUF_DIR=%UNITY_PROJ_DIR%\..\Tools\BuildProtobuf
 set MSBuild="%VisualStudio%\MSBuild\Current\Bin\MSBuild.exe"
 @rem 协议源文件目录
 set PROTO_DIR=%UNITY_PROJ_DIR%\..\Proto
@@ -23,7 +25,7 @@ pause
 exit
 )
 
-
+echo BuildProtobuf Dir: %BUILDPROTOBUF_DIR%
 
 if exist "%CSHARP_OUT%" (rmdir /Q /S "%CSHARP_OUT%")
 mkdir "%CSHARP_OUT%"
@@ -43,7 +45,7 @@ protogen --csharp_out="%CSHARP_OUT%" %PROTO_FILES%
 popd
 
 pushd %cd%
-cd BuildProtobuf
+cd %BUILDPROTOBUF_DIR%
 BuildProtobuf.exe -source="%PROTO_DIR%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -extension="%EXTENSION%" -netcsharp=%CSHARP_OUT%
 popd
 

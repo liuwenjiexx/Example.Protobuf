@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="Copy &quot;$(OutDir)\$(TargetName).exe&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).exe&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).dll&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Lua\Tools\$(TargetName)\$(TargetName).runtimeconfig.json&quot;&#xD;&#xA;&#xD;&#xA;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).exe&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).exe&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).dll&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)\..\Unity.Protobuf.Net\Tools\$(TargetName)\$(TargetName).runtimeconfig.json&quot;" />
+    <Exec Command="Copy &quot;$(OutDir)\$(TargetName).exe&quot; &quot;$(SolutionDir)\..\Tools\$(TargetName)\$(TargetName).exe&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).dll&quot; &quot;$(SolutionDir)\..\Tools\$(TargetName)\$(TargetName).dll&quot;&#xD;&#xA;Copy &quot;$(OutDir)\$(TargetName).runtimeconfig.json&quot; &quot;$(SolutionDir)\..\Tools\$(TargetName)\$(TargetName).runtimeconfig.json&quot;&#xD;&#xA;" />
   </Target>
 
   <ItemGroup>
