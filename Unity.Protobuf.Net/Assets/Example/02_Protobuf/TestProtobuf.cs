@@ -29,12 +29,19 @@ public class TestProtobuf : MonoBehaviour
             Buffer.BlockCopy(ms.GetBuffer(), 0, data, 0, data.Length);
         }
 
-        using (var ms = new MemoryStream(data))
+        DateTime dt = DateTime.Now;
+        for (int i = 0; i < 10000; i++)
         {
-            CSLogin login;
-            login = Serializer.Deserialize<CSLogin>(ms);
-            Debug.Log($"userName: {login.userName}, userPwd: {login.userPwd}");
+            using (var ms = new MemoryStream(data))
+            {
+                CSLogin login;
+              //    login = Serializer.Deserialize<CSLogin>(ms);
+                login =(CSLogin) Serializer.Deserialize(typeof(CSLogin), ms);
+                //Debug.Log($"userName: {login.userName}, userPwd: {login.userPwd}");
+            }
         }
+        Debug.Log("SSS:" + (DateTime.Now.Subtract(dt)).TotalMilliseconds);
+
     }
 
 }
