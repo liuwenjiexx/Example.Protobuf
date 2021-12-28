@@ -27,6 +27,6 @@ echo BuildProtobuf Dir: %BUILDPROTOBUF_DIR%
 
 cd %BUILDPROTOBUF_DIR%
 
-BuildProtobuf.exe -protoc="%PROJ_TOOLS_DIR%\protoc.exe" -source="%PROTO_DIR%" -pb="%PB_FILE%" -lua="%LUA_FILE%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -extension="%EXTENSION%"
+BuildProtobuf.exe -protoc="%UNITY_PROJ_DIR%\..\Tools\protoc.exe" -source="%PROTO_DIR%" -pb="%PB_FILE%" -lua="%LUA_FILE%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -extension="%EXTENSION%"
 
 pause
