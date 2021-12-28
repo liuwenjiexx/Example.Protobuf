@@ -14,8 +14,6 @@ set CSHARP_PROJ=%CSHARP_PROJ_DIR%\ProtoProject.sln
 
 @rem 消息ID 枚举
 set MSG_ID_ENUM="MessageID"
-@rem 协议文件扩展名
-set EXTENSION=.proto
 @rem 消息名格式
 @rem CS_msg, SC_msg
 set MSG="(^|\.)(((?<cs>CS)|(?<sc>SC))_)?(?<name>[^\.]+)$"
@@ -46,7 +44,7 @@ popd
 
 pushd %cd%
 cd %BUILDPROTOBUF_DIR%
-BuildProtobuf.exe -source="%PROTO_DIR%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -extension="%EXTENSION%" -netcsharp=%CSHARP_OUT%
+BuildProtobuf.exe -source="%PROTO_DIR%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -netcsharp=%CSHARP_OUT%
 popd
 
 %MSBuild% %CSHARP_PROJ% /property:Configuration=Release

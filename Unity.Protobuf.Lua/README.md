@@ -8,14 +8,6 @@
 
 `build_xlua_with_libs` 包含 `xLua` 扩展插件，如 `protobuf` 的 `pb`，建议使用该仓库编译的 `xlua.dll`
 
-### protoc
-
-[protoc.exe 下载地址](https://github.com/protocolbuffers/protobuf/releases)
-
-编译 `protobuf` 多个协议为一个字节码文件，`lua` 运行时 `pb.load` 加载该字节码文件
-
-
-
 
 
 ## **样例详解**
