@@ -54,9 +54,10 @@ public class TestMsgId : MonoBehaviour
 
     }
 
-    byte[] bytes4 = new byte[4];
+    
     public int ReadInt32(Stream stream)
     {
+        byte[] bytes4 = new byte[4];
         stream.Read(bytes4, 0, 4);
         int value = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(bytes4, 0));
         return value;

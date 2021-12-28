@@ -6,69 +6,53 @@ namespace Example
 {
     public class MsgIds
     {
-        public class CS
+        public Dictionary<int, Type> IdToType { get; private set; } = new Dictionary<int, Type>();
+        public Dictionary<Type, int> TypeToId { get; private set; } = new Dictionary<Type, int>();
+        public Dictionary<string, int> NameToId { get; private set; } = new Dictionary<string, int>();
+        public Dictionary<int, string> IdToName { get; private set; } = new Dictionary<int, string>();
+
+        public static MsgIds CS { get; private set; }
+        public static MsgIds SC { get; private set; }
+
+        static MsgIds()
         {
-            public readonly static Dictionary<int, Type> IdToType;
-            public readonly static Dictionary<Type, int> TypeToId;
+            CS = new MsgIds();
+            
+            CS.Register(10001, typeof(CSLogin), "Login");
 
-            static CS()
-            {
-                IdToType = new Dictionary<int, Type>();
-                TypeToId = new Dictionary<Type, int>();
-                
-                Register(10001, typeof(CSLogin));
-           }
-		   
-		   
-            public static void Register(int id, Type type)
-            {
-               IdToType[id] = type;
-               TypeToId[type] = id;
-            }
-
-            public static bool TryGetType(int id, out Type type)
-            {
-                return IdToType.TryGetValue(id, out type);
-            }
-
-            public static bool TryGetId(Type type, out int id)
-            {
-                return TypeToId.TryGetValue(type, out id);
-            }
-	
+            SC = new MsgIds();
+            
+            SC.Register(10002, typeof(SCLogin), "Login");
         }
 
-        public class SC
+        public void Register(int id, Type type, string name)
         {
-            public readonly static Dictionary<int, Type> IdToType;
-            public readonly static Dictionary<Type, int> TypeToId;
-
-            static SC()
-            {
-                IdToType = new Dictionary<int, Type>();
-                TypeToId = new Dictionary<Type, int>();
-
-                Register(10002, typeof(SCLogin));
-            }
-		
-		
-            public static void Register(int id, Type type)
-            {
-               IdToType[id] = type;
-               TypeToId[type] = id;
-            }
-
-            public static bool TryGetType(int id, out Type type)
-            {
-                return IdToType.TryGetValue(id, out type);
-            }
-
-            public static bool TryGetId(Type type, out int id)
-            {
-                return TypeToId.TryGetValue(type, out id);
-            }
-	
+            IdToType[id] = type;
+            TypeToId[type] = id;
+            NameToId[name] = id;
+            IdToName[id] = name;
         }
+        
+        public bool TryGetId(string name, out int id)
+        {
+            return NameToId.TryGetValue(name, out id);
+        }
+
+        public bool TryGetId(Type type, out int id)
+        {
+            return TypeToId.TryGetValue(type, out id);
+        }
+        
+        public bool TryGetName(int id, out string name)
+        {
+            return IdToName.TryGetValue(id, out name);
+        }
+        
+        public bool TryGetType(int id, out Type type)
+        {
+            return IdToType.TryGetValue(id, out type);
+        }
+
     }
 }
 	

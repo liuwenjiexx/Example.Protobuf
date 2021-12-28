@@ -17,65 +17,59 @@ namespace <xsl:value-of select="PackageName"/>
 {
     public class <xsl:value-of select="$ClassName"/>
     {
-        public class CS
-        {
-            public readonly static Dictionary&lt;int, Type&gt; IdToType;
-            public readonly static Dictionary&lt;Type, int&gt; TypeToId;
+        public Dictionary&lt;int, Type&gt; IdToType { get; private set; } = new Dictionary&lt;int, Type&gt;();
+        public Dictionary&lt;Type, int&gt; TypeToId { get; private set; } = new Dictionary&lt;Type, int&gt;();
+        public Dictionary&lt;string, int&gt; NameToId { get; private set; } = new Dictionary&lt;string, int&gt;();
+        public Dictionary&lt;int, string&gt; IdToName { get; private set; } = new Dictionary&lt;int, string&gt;();
 
-            static CS()
-            {
-                IdToType = new Dictionary&lt;int, Type&gt;();
-                TypeToId = new Dictionary&lt;Type, int&gt;();
-                <xsl:for-each select="Messages/Message">
+        public static MsgIds CS { get; private set; }
+        public static MsgIds SC { get; private set; }
+
+        static MsgIds()
+        {
+            CS = new MsgIds();
+            <xsl:for-each select="Messages/Message">
                 <xsl:if test="ClientToServer='true'">
-                Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>));</xsl:if>
+            CS.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:if>
             </xsl:for-each>
-           }
-		   
-		   <xsl:call-template name="ClassMethods"/>
+
+            SC = new MsgIds();
+            <xsl:for-each select="Messages/Message">
+                <xsl:if test="ClientToServer='false'">
+            SC.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:if>
+            </xsl:for-each>
         }
 
-        public class SC
+        public void Register(int id, Type type, string name)
         {
-            public readonly static Dictionary&lt;int, Type&gt; IdToType;
-            public readonly static Dictionary&lt;Type, int&gt; TypeToId;
-
-            static SC()
-            {
-                IdToType = new Dictionary&lt;int, Type&gt;();
-                TypeToId = new Dictionary&lt;Type, int&gt;();
-<xsl:for-each select="Messages/Message">
-    <xsl:if test="ClientToServer='false'">
-                Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>));</xsl:if>
-</xsl:for-each>
-            }
-		
-		<xsl:call-template name="ClassMethods"/>
+            IdToType[id] = type;
+            TypeToId[type] = id;
+            NameToId[name] = id;
+            IdToName[id] = name;
         }
+        
+        public bool TryGetId(string name, out int id)
+        {
+            return NameToId.TryGetValue(name, out id);
+        }
+
+        public bool TryGetId(Type type, out int id)
+        {
+            return TypeToId.TryGetValue(type, out id);
+        }
+        
+        public bool TryGetName(int id, out string name)
+        {
+            return IdToName.TryGetValue(id, out name);
+        }
+        
+        public bool TryGetType(int id, out Type type)
+        {
+            return IdToType.TryGetValue(id, out type);
+        }
+
     }
 }
 	</xsl:template>
 
-	<xsl:template match="Message">
-		<xsl:apply-templates select="Name" />
-		<xsl:if test="position()!=last()">,</xsl:if>
-	</xsl:template>
-	
-	<xsl:template name="ClassMethods">
-            public static void Register(int id, Type type)
-            {
-               IdToType[id] = type;
-               TypeToId[type] = id;
-            }
-
-            public static bool TryGetType(int id, out Type type)
-            {
-                return IdToType.TryGetValue(id, out type);
-            }
-
-            public static bool TryGetId(Type type, out int id)
-            {
-                return TypeToId.TryGetValue(type, out id);
-            }
-	</xsl:template>
 </xsl:stylesheet>
