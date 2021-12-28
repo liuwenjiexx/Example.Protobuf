@@ -1,3 +1,0 @@
-﻿Example.CS_Login=10001
-Example.SC_Login=10002
-
