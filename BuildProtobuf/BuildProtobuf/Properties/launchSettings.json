@@ -2,7 +2,7 @@
   "profiles": {
     "BuildProtobuf": {
       "commandName": "Project",
-      "commandLineArgs": "-protoc=\"..\\..\\..\\..\\..\\Unity.Protobuf.Lua\\Tools/protoc.exe\" -source=\"..\\..\\..\\..\\..\\Proto\" -pb=\"..\\..\\..\\..\\Assets\\Example\\01_PB\\Resources\\Lua\\Proto\\Proto.pb.bytes\" -lua=\"..\\..\\..\\..\\Assets\\Example\\03_Protobuf\\Resources\\Lua\\Proto\\Proto.lua\" -netcsharp=. "
+      "commandLineArgs": "-protoc=\"..\\..\\..\\..\\..\\Tools/protoc.exe\" -source=\"..\\..\\..\\..\\..\\Proto\" -pb=\"..\\..\\..\\..\\Unity.Protobuf.Lua\\Assets\\Example\\01_PB\\Resources\\Lua\\Proto\\Proto.pb.bytes\" -lua=\"..\\..\\..\\..\\..\\Unity.Protobuf.Lua\\Assets\\Example\\03_MsgId\\Resources\\Lua\\Proto\\MsgIds.lua\" -netcsharp=\"..\\..\\..\\..\\..\\Unity.Protobuf.Net\\Tools\\ProtoProject\\Proto\""
     }
   }
 }

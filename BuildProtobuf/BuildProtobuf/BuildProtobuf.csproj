@@ -11,12 +11,14 @@
   </Target>
 
   <ItemGroup>
+    <None Remove="xslt\lua\MsgId.xslt" />
     <None Remove="xslt\MsgIds.xslt" />
-    <None Remove="xslt\netcsharp\MsgIds.xslt" />
+    <None Remove="xslt\netcsharp\MsgId.xslt" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="xslt\netcsharp\MsgIds.xslt" />
+    <EmbeddedResource Include="xslt\lua\MsgId.xslt" />
+    <EmbeddedResource Include="xslt\netcsharp\MsgId.xslt" />
   </ItemGroup>
 
 </Project>

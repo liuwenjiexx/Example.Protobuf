@@ -39,68 +39,68 @@ function Proto:initialize(options)
 
 end
 
-function Proto:encode( type,msg,data )
+function Proto:encode(type, name, data)
     local p = nil
     local msgId = nil
     local errorMsg = nil
 
     if type == "cs" then
-        local name = protoCSCmd.msg[msg]
-        if name == nil then
-            error("serialize cmd is null > "..msg)
+        local msg = protoCSCmd.nameToMsg[name]
+        if msg == nil then
+            error("serialize cmd is null > " .. name)
         else
-            p, errorMsg = pb.encode(name,data)
-            msgId = protoCSCmd.msgToId[msg]
+            p, errorMsg = pb.encode(msg, data)
+            msgId = protoCSCmd.nameToId[name]
         end
     elseif type == "sc" then
-        local name = protoSCCmd.msg[msg]
-        if name == nil then
-            error("serialize cmd is null > "..msg)
+        local msg = protoSCCmd.nameToMsg[name]
+        if msg == nil then
+            error("serialize cmd is null > " .. name)
         else
-            p, errorMsg =pb.encode(name,data)
-            msgId = protoCSCmd.msgToId[msg]
+            p, errorMsg = pb.encode(msg, data)
+            msgId = protoCSCmd.nameToId[name]
         end
     else
-        error("serialize type is error > "..type)
+        error("serialize type is error > " .. type)
     end
     if errorMsg then
-        error("serialize type is error > "..msg .. "  " .. errorMsg)
+        error("serialize type is error > " .. name .. "  " .. errorMsg)
     end
-    return p,msgId
+    return p, msgId
 end
 
-function Proto:decode( type,cmd,data )
+function Proto:decode(type, name, data)
     local p = nil
-    local ok,err = xpcall(function()
+    local ok, err = xpcall(function()
         if type == "cs" then
-            local name = protoCSCmd.id[cmd]
-            if name == nil then
-                error("serialize cmd is null > "..cmd)
+            local msg = protoCSCmd.nameToMsg[name]
+            if msg == nil then
+                error("serialize name is null > " .. name)
             else
-                p =  decode(protoCSCmd.id[cmd],data)
+                p = decode(msg, data)
             end
         elseif type == "sc" then
-            local name = protoSCCmd.id[cmd]
-            if name == nil then
-                error("serialize cmd is null > "..cmd)
+            local msg = protoSCCmd.nameToMsg[name]
+            if msg == nil then
+                error("serialize name is null > " .. name)
             else
-                p =  decode(name,data)
+                p = decode(msg, data)
             end
         else
-            error("serialize type is error > "..type)
+            error("serialize type is error > " .. type)
         end
-    end,function()
+    end, function()
         if __G_ERROR_TRACK then
-            __G_ERROR_TRACK(cmd)
+            __G_ERROR_TRACK(name)
         else
-            print("ERROR",debug.traceback(cmd))
+            print("ERROR", debug.traceback(name))
         end
-    end,33)
+    end, 33)
     if not ok then
         if __G_ERROR_TRACK then
-            __G_ERROR_TRACK(cmd)
+            __G_ERROR_TRACK(name)
         else
-            print("ERROR",debug.traceback(cmd))
+            print("ERROR", debug.traceback(name))
         end
     else
         return p
@@ -108,45 +108,45 @@ function Proto:decode( type,cmd,data )
 end
 
 -- CS encode
-function Proto:cs(msg, data)
+function Proto:cs(name, data)
     local bytes = nil
     local msgId = nil
     local errorMsg = nil
 
-    local name
-    
-    name = protoCSCmd.msg[msg]
-    if name == nil then
-        error("serialize msg is null > " .. msg)
+    local msg
+
+    msg = protoCSCmd.nameToMsg[name]
+    if msg == nil then
+        error("serialize name is null > " .. name)
     else
-        bytes, errorMsg = pb.encode(name, data)
-        msgId = protoCSCmd.msgToId[msg]
+        bytes, errorMsg = pb.encode(msg, data)
+        msgId = protoCSCmd.nameToId[name]
     end
     return bytes, msgId
 end
 
-function Proto:sc(msg, data)
+function Proto:sc(name, data)
     local v = nil
-    local name
-    if type(msg) == "number" then
-        name = protoSCCmd.id[msg]
+    local msg
+    if type(name) == "number" then
+        msg = protoSCCmd.idToMsg[name]
     else
-        name = msg
+        msg =  protoSCCmd.nameToMsg[name]
     end
-    if name == nil then
-        error("serialize msg is null > " .. msg)
+    if msg == nil then
+        error("serialize name is null > " .. name)
     else
-        v = decode(protoSCCmd.id[msg], data)
+        v = decode(msg, data)
     end
     return v
 end
 
-function Proto:getCSCmd(msg)
-    return protoCSCmd.msgToId[msg]
+function Proto:getCSId(name)
+    return protoCSCmd.nameToId[name]
 end
 
-function Proto:getSCCmd(msg)
-    return protoSCCmd.msgToId[msg]
+function Proto:getSCId(name)
+    return protoSCCmd.nameToId[name]
 end
 
 return Proto

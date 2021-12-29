@@ -26,11 +26,30 @@ namespace Example
 
     }
 
+    [global::ProtoBuf.ProtoContract(Name = @"CS_Login2")]
+    public partial class CSLogin2 : global::ProtoBuf.IExtensible
+    {
+        private global::ProtoBuf.IExtension __pbn__extensionData;
+        global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+            => global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
+
+        [global::ProtoBuf.ProtoMember(1)]
+        [global::System.ComponentModel.DefaultValue("")]
+        public string userName { get; set; } = "";
+
+        [global::ProtoBuf.ProtoMember(2)]
+        [global::System.ComponentModel.DefaultValue("")]
+        public string userPwd { get; set; } = "";
+
+    }
+
     [global::ProtoBuf.ProtoContract()]
     public enum MessageID
     {
         [global::ProtoBuf.ProtoEnum(Name = @"CS_Login")]
         CSLogin = 10001,
+        [global::ProtoBuf.ProtoEnum(Name = @"CS_Login2")]
+        CSLogin2 = 10002,
         [global::ProtoBuf.ProtoEnum(Name = @"SC_Login")]
         SCLogin = 10002,
     }

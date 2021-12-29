@@ -27,17 +27,11 @@ namespace <xsl:value-of select="PackageName"/>
 
         static MsgIds()
         {
-            CS = new MsgIds();
-            <xsl:for-each select="Messages/Message">
-                <xsl:if test="ClientToServer='true'">
-            CS.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:if>
-            </xsl:for-each>
+            CS = new MsgIds();<xsl:for-each select="Messages/CS/Message">
+            CS.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:for-each>
 
-            SC = new MsgIds();
-            <xsl:for-each select="Messages/Message">
-                <xsl:if test="ClientToServer='false'">
-            SC.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:if>
-            </xsl:for-each>
+            SC = new MsgIds();<xsl:for-each select="Messages/SC/Message">
+            SC.Register(<xsl:value-of select="Id"/>, typeof(<xsl:value-of select="TypeName"/>), "<xsl:value-of select="UsedName"/>");</xsl:for-each>
         }
 
         public void Register(int id, Type type, string name)

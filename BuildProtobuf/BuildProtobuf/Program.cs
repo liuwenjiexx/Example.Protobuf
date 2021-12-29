@@ -22,11 +22,14 @@ namespace BuildProtobuf
         public static string ProtocPath;
         public static string OutputPbFile;
         public static string DataFile = "proto.txt";
-        public static string LuaFile = "Proto.lua";
+        public static string MsgIdLuaFile = "MsgIds.lua";
         public static bool ResetID = false;
         public static int AutoID = 10000;
         public static string MessageIDEnumNamePattern = "MessageID";
         public static string CSharpMsgIdsClassName = "MsgIds";
+        public static List<string> ProtoFiles = new List<string>();
+        public static string FullSourceDir;
+
 
         /// <summary>
         /// 正则表达式
@@ -52,6 +55,7 @@ namespace BuildProtobuf
 
 
                 string str = null;
+                str = Path.GetFullPath(".");
                 if (TryGetArg(dic, "-AutoID", ref str))
                 {
                     AutoID = int.Parse(str);
@@ -67,52 +71,53 @@ namespace BuildProtobuf
                     throw new System.Exception("Directory not exists. dir: " + fullSrcDir);
                 }
 
+                FullSourceDir = fullSrcDir;
+
                 var messages = LoadMessages(fullSrcDir);
 
-                foreach (var file in messages.Select(o => o.PackageInfo.Path).Distinct())
+                Console.WriteLine("Proto files:");
+                foreach (var file in ProtoFiles)
                 {
                     Console.WriteLine(file);
                 }
+                Console.WriteLine();
 
                 if (TryGetArg(dic, "-pb", ref OutputPbFile))
                 {
-                    BuildProtoPB(messages.Select(o => o.PackageInfo.Path).Distinct(), fullSrcDir, OutputPbFile);
+                    BuildProtoPB(OutputPbFile);
                 }
 
-                if (TryGetArg(dic, "-lua", ref LuaFile))
+                if (TryGetArg(dic, "-lua", ref MsgIdLuaFile))
                 {
-                    BuildProtoLua(messages, LuaFile);
-                    //BuildProtoLua(messages, Path.Combine(OutputLuaDir, CSLuaFile));
-
-                    //BuildProtoLua(messages.Where(o => !o.IsClientToServer), Path.Combine(OutputLuaDir, SCLuaFile));
-
+                    BuildProtoLua(messages, MsgIdLuaFile);
                 }
 
                 if (TryGetArg(dic, "-netcsharp", ref OutputCSharpDir))
                 {
                     TryGetArg(dic, "-msgid", ref CSharpMsgIdsClassName);
-                    BuildProtoNetCSharp(messages, Path.Combine(OutputCSharpDir, CSharpMsgIdsClassName + ".cs"));
+                    BuildProtoNetCSharp(messages, OutputCSharpDir);
 
                 }
 
 
-                StringBuilder sb = new StringBuilder();
-                foreach (var msg in messages)
-                {
-                    sb.Append(msg.FullName)
-                        .Append("=")
-                        .Append(msg.id)
-                        .AppendLine();
-                }
-                sb.AppendLine();
-                File.WriteAllText(DataFile, sb.ToString(), Encoding.UTF8);
+                //StringBuilder sb = new StringBuilder();
+                //foreach (var msg in messages)
+                //{
+                //    sb.Append(msg.FullName)
+                //        .Append("=")
+                //        .Append(msg.id)
+                //        .AppendLine();
+                //}
+                //sb.AppendLine();
+                //File.WriteAllText(DataFile, sb.ToString(), Encoding.UTF8);
+
                 Console.WriteLine("Build success");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
-           // Console.ReadKey();
+            // Console.ReadKey();
         }
 
         static bool TryGetArg(Dictionary<string, string> args, string key, ref string value)
@@ -170,7 +175,6 @@ namespace BuildProtobuf
 
             foreach (var msg in FindProtoFiles(dir, filter))
             {
-                //msg.IsClientToServer = true;
                 if (msg is ProtoMessageInfo)
                 {
                     messages.Add((ProtoMessageInfo)msg);
@@ -215,22 +219,23 @@ namespace BuildProtobuf
             int nextId = AutoID;
             foreach (var msg in messages)
             {
-                msg.index = index;
+                msg.Index = index;
 
                 if (oldIds.TryGetValue(msg.FullName, out var id))
                 {
-                    msg.id = id;
+                    msg.Id = id;
                 }
                 else
                 {
 
-                    while (true)
-                    {
-                        nextId++;
-                        if (!oldIds.ContainsValue(nextId))
-                            break;
-                    }
-                    msg.id = nextId;
+                    //while (true)
+                    //{
+                    //    nextId++;
+                    //    if (!oldIds.ContainsValue(nextId))
+                    //        break;
+                    //}
+                    //msg.Id = nextId;
+                    throw new Exception($"Not define message id, {msg.Name}");
                 }
                 index++;
             }
@@ -244,6 +249,13 @@ namespace BuildProtobuf
 
             if (Directory.Exists(fullDir))
             {
+                int index = 0;
+
+                if (FullSourceDir.EndsWith("\\") || FullSourceDir.EndsWith("/"))
+                    index = FullSourceDir.Length;
+                else
+                    index = FullSourceDir.Length + 1;
+                int protoIndex = 0;
                 foreach (var file in Directory.GetFiles(fullDir, filter, SearchOption.AllDirectories))
                 {
                     string text = File.ReadAllText(file, Encoding.UTF8);
@@ -251,8 +263,11 @@ namespace BuildProtobuf
                     ProtoPackageInfo packageInfo = ProtoPackageInfo.Parse(text);
                     packageInfo.Path = file;
 
+                    ProtoFiles.Add(file.Substring(index));
+
                     foreach (var msg in ProtoMessageInfo.Parse(packageInfo, text))
                     {
+                        msg.Index = protoIndex++;
                         yield return msg;
                     }
 
@@ -260,6 +275,7 @@ namespace BuildProtobuf
                     {
                         yield return enumInfo;
                     }
+
                 }
             }
         }
@@ -272,7 +288,7 @@ namespace BuildProtobuf
             return null;
         }
 
-        public static void BuildProtoPB(IEnumerable<string> protoFiles, string rootDir, string outputPath)
+        public static void BuildProtoPB(string outputPath)
         {
             Console.WriteLine("Build pb start");
             string pbcPath = null;
@@ -293,28 +309,34 @@ namespace BuildProtobuf
             outputPath = Path.GetFullPath(outputPath);
 
             StringBuilder cmdText = new StringBuilder();
-            cmdText.Append("-o \"")
-                .Append(outputPath)
-                .Append("\"");
+            cmdText.Append("-o \"").Append(outputPath).Append("\"");
 
-            int index;
-            if (rootDir.EndsWith("\\") || rootDir.EndsWith("/"))
-                index = rootDir.Length;
-            else
-                index = rootDir.Length + 1;
-            foreach (var file in protoFiles)
+            foreach (var file in ProtoFiles)
             {
-                cmdText.Append(" \"")
-                   .Append(file.Substring(index))
-                    .Append("\"");
+                cmdText.Append(" \"").Append(file).Append("\"");
             }
+
+            RunCmd(FullSourceDir, pbcPath, cmdText.ToString());
+
+            Console.WriteLine("done");
+            Console.WriteLine($"{outputPath}");
+        }
+        static void RunCmd(string file, string argument)
+        {
+            RunCmd(Path.GetFullPath("."), file, argument);
+        }
+        static void RunCmd(string workDir, string file, string argument)
+        {
+            Console.WriteLine($"Run cmd, WorkDir: '{workDir}', file: '{file}', argument: {argument}");
+            Console.WriteLine();
+
             using (var proc = new System.Diagnostics.Process())
             {
                 proc.StartInfo = new System.Diagnostics.ProcessStartInfo()
                 {
-                    WorkingDirectory = rootDir,
-                    FileName = pbcPath,
-                    Arguments = cmdText.ToString(),
+                    WorkingDirectory = Path.GetFullPath(workDir),
+                    FileName = file,
+                    Arguments = argument,
                     CreateNoWindow = true,
                     UseShellExecute = false,
                     RedirectStandardError = true,
@@ -337,119 +359,15 @@ namespace BuildProtobuf
                     throw new Exception(error.ToString());
                 }
             }
-
-            Console.WriteLine("done");
-            Console.WriteLine($"{outputPath}");
         }
-
-
-        static void BuildProtoLua(IEnumerable<ProtoMessageInfo> messages, string outputPath)
-        {
-            StringBuilder sb = new StringBuilder();
-            int index = 0;
-            outputPath = Path.GetFullPath(outputPath);
-
-            int count = messages.Count();
-            var mapIndex = new Dictionary<ProtoMessageInfo, int>();
-
-            if (count > 0)
-            {
-                string packageName;
-
-                var first = messages.First();
-                packageName = first.PackageInfo.PackageName;
-                sb.AppendLine("-- ***该文件为自动生成的***");
-
-                sb.AppendLine($"local package = \"{packageName}\"");
-                sb.AppendLine("local p= {");
-
-                index = 0;
-                foreach (var msg in messages)
-                {
-                    sb.Append($"[{(index + 1)}] = ");
-                    if (string.IsNullOrEmpty(packageName))
-                    {
-                        sb.Append($"\"{msg.Name}\"");
-                    }
-                    else
-                    {
-                        sb.Append($"package..\".{msg.Name}\"");
-                    }
-                    if (index < count - 1)
-                        sb.Append(",");
-                    sb.AppendLine();
-                    mapIndex[msg] = index;
-                    index++;
-                }
-                sb.AppendLine("}");
-            }
-
-            sb.AppendLine("return {");
-            sb.AppendLine("  cs = {");
-            Build(messages.Where(o => o.IsClientToServer), sb, mapIndex);
-            sb.AppendLine("},")
-                .AppendLine("sc ={");
-            Build(messages.Where(o => !o.IsClientToServer), sb, mapIndex);
-            sb.AppendLine("}");
-
-
-
-            sb.AppendLine("}");
-            if (!Directory.Exists(Path.GetDirectoryName(outputPath)))
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
-            Encoding encoding = new UTF8Encoding(false);
-            File.WriteAllText(outputPath, sb.ToString(), encoding);
-
-            Console.WriteLine($"done");
-            Console.WriteLine($"{outputPath}");
-        }
-
-
-        static void Build(IEnumerable<ProtoMessageInfo> items, StringBuilder sb, Dictionary<ProtoMessageInfo, int> mapIndex)
-        {
-            int count2 = items.Count();
-            int index;
-            sb.AppendLine("    id = {");
-            index = 0;
-            foreach (var msg in items)
-            {
-                sb.Append($"[{msg.id}] = p[{(mapIndex[msg] + 1)}]");
-                if (index < count2 - 1)
-                    sb.Append(",");
-                sb.AppendLine();
-                index++;
-            }
-            sb.AppendLine("},");
-
-            sb.AppendLine("    msg = {");
-            index = 0;
-            foreach (var msg in items)
-            {
-                sb.Append($"[\"{msg.UsedName}\"] = p[{(mapIndex[msg] + 1)}]");
-                if (index < count2 - 1)
-                    sb.Append(",");
-                sb.AppendLine();
-                index++;
-            }
-            sb.AppendLine("},");
-
-            sb.AppendLine("  msgToId = {");
-            index = 0;
-            foreach (var msg in items)
-            {
-                sb.Append($"[\"{msg.UsedName}\"] = {msg.id}");
-                if (index < count2 - 1)
-                    sb.Append(",");
-                sb.AppendLine();
-                index++;
-            }
-            sb.AppendLine("}");
-        }
-
+         
         static void CreateMessageNode(XmlElement parent, IEnumerable<ProtoMessageInfo> messages)
         {
             var doc = parent.OwnerDocument;
             var msgsNode = doc.CreateElement("Messages");
+            var csNode = doc.CreateElement("CS");
+            var scNode = doc.CreateElement("SC");
+
             XmlElement tmp;
             foreach (var msg in messages)
             {
@@ -468,7 +386,11 @@ namespace BuildProtobuf
                 msgNode.AppendChild(tmp);
 
                 tmp = doc.CreateElement("Id");
-                tmp.InnerText = msg.id.ToString();
+                tmp.InnerText = msg.Id.ToString();
+                msgNode.AppendChild(tmp);
+
+                tmp = doc.CreateElement("Index");
+                tmp.InnerText = msg.Index.ToString();
                 msgNode.AppendChild(tmp);
 
                 tmp = doc.CreateElement("TypeName");
@@ -479,8 +401,18 @@ namespace BuildProtobuf
                 tmp.InnerText = msg.IsClientToServer.ToString().ToLower();
                 msgNode.AppendChild(tmp);
 
-                msgsNode.AppendChild(msgNode);
+                if (msg.IsClientToServer)
+                {
+                    csNode.AppendChild(msgNode);
+                }
+                else
+                {
+                    scNode.AppendChild(msgNode);
+                }
+
             }
+            msgsNode.AppendChild(csNode);
+            msgsNode.AppendChild(scNode);
             parent.AppendChild(msgsNode);
         }
 
@@ -570,8 +502,8 @@ namespace BuildProtobuf
         public string Name;
         public string FullName;
         public string UsedName;
-        public int id;
-        public int index;
+        public int Id;
+        public int Index;
         public bool IsClientToServer;
         public string TypeName;
 
