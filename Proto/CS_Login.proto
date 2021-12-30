@@ -3,7 +3,6 @@ package Example;
 
 enum MessageID {
   CS_Login = 10001;
-  CS_Login2 = 10002;
   SC_Login = 10002;
 }
 
@@ -12,7 +11,3 @@ message CS_Login {
   string userPwd = 2;
 }
 
-message CS_Login2 {
-  string userName = 1;
-  string userPwd = 2;
-}

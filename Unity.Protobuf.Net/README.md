@@ -102,7 +102,7 @@ using (var ms = new MemoryStream(data))
    }
    ```
 
-2. 生成 `Assets/Plugins/Proto.dll`，运行 `Tools/Build_Proto_CSharp.bat` 命令
+2. 生成 `Assets/Plugins/Proto.dll`，运行 `Tools/Build_Proto_NetCSharp_Assembly.bat` 命令
 
    命令生成协议代码，位置 `Tools/ProtoProject/Proto`
 

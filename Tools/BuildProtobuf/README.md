@@ -20,7 +20,7 @@
 
 - -lua
 
-  `Proto.lua` 文件路径
+  `MsgIds.lua` 文件路径
 
 - -msg_id_enum
 
@@ -82,39 +82,46 @@ message SC_Login {
 
 
 
-### Proto.lua
+### MsgIds.lua
 
 `-lua` 参数生成
 
 ```lua
 local package = "Example"
-local p= {
-    [1] = package..".CS_Login",
-    [2] = package..".SC_Login"
+local m = {
+      [1] = package .. ".CS_Login",
+      [3] = package .. ".SC_Login"
 }
+
 return {
-  cs = {
-    id = {
-      [10001] = p[1]
-	},
-    msg = {
-      ["Login"] = p[1]
+    cs = {
+        idToMsg = {
+            [10001] = m[1]
+        },
+        idToName = {
+            [10001] = "CS_Login"
+        },
+        nameToMsg = {
+            ["Login"] = m[1]
+        },
+        nameToId = {
+            ["Login"] = 10001
+        }
     },
-    msgToId = {
-      ["Login"] = 10001
+    sc = {
+        idToMsg = {
+            [10002] = m[2]
+        },
+        idToName = {
+            [10002] = "SC_Login"
+        },
+        nameToMsg = {
+            ["Login"] = m[2]
+        },
+        nameToId = {
+            ["Login"] = 10002
+        }
     }
-  },
-  sc ={
-    id = {
-      [10002] = p[2]
-    },
-    msg = {
-      ["Login"] = p[2]
-    },
-    msgToId = {
-      ["Login"] = 10002
-    }
-  }
 }
 ```
 

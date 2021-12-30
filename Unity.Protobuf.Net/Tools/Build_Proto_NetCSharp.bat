@@ -12,6 +12,7 @@ set CSHARP_PROJ_DIR=ProtoProject
 set CSHARP_PROJ=%CSHARP_PROJ_DIR%\ProtoProject.sln
 
 
+
 @rem 消息ID 枚举
 set MSG_ID_ENUM="MessageID"
 @rem 消息名格式
@@ -28,27 +29,15 @@ echo BuildProtobuf Dir: %BUILDPROTOBUF_DIR%
 if exist "%CSHARP_OUT%" (rmdir /Q /S "%CSHARP_OUT%")
 mkdir "%CSHARP_OUT%"
 
-pushd %cd%
-cd %PROTO_DIR%
-
-set PROTO_FILES=
-
-FOR %%i IN (*.proto) DO (
-    set PROTO_FILES=!PROTO_FILES! "%%i"
-    @echo %%i
-)
-
-echo Proto files=%PROTO_FILES%
-@rem protogen --csharp_out="%CSHARP_OUT%" %PROTO_FILES%
-
-popd
 
 pushd %cd%
 cd %BUILDPROTOBUF_DIR%
 BuildProtobuf.exe -source="%PROTO_DIR%" -msg_id_enum=%MSG_ID_ENUM% -msg=%MSG% -netcsharp=%CSHARP_OUT%
 popd
 
+if defined OUTPUT_CSHARP_ASSEMBLY (
 %MSBuild% %CSHARP_PROJ% /property:Configuration=Release
-copy /Y %CSHARP_PROJ_DIR%\bin\Release\Proto.dll %UNITY_PROJ_DIR%\Assets\Plugins\Proto.dll
+copy /Y %CSHARP_PROJ_DIR%\bin\Release\Proto.dll %OUTPUT_CSHARP_ASSEMBLY%
+)
 
 pause

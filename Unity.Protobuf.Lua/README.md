@@ -153,46 +153,53 @@
    }
    ```
 
-2. 运行 `Tools/BuildProtoLua.bat` 生成 `Proto.lua` 消息ID和消息名称的映射数据
+2. 运行 `Tools/BuildProtoLua.bat` 生成 `MsgIds.lua` 消息ID和消息名称的映射数据
 
    **生成**
 
    ```tex
-   Assets\Example\03_MsgId\Resources\Lua\Proto\Proto.lua
+   Assets\Example\03_MsgId\Resources\Lua\Proto\MsgIds.lua
    Assets\Example\01_PB\Resources\Lua\Proto\Proto.pb.bytes
    ```
 
-   `Proto.lua` 文件内容
+   `MsgIds.lua` 文件内容
 
    ```lua
    local package = "Example"
-   local p= {
-   [1] = package..".CS_Login",
-   [2] = package..".SC_Login"
+   local m = {
+         [1] = package .. ".CS_Login",
+         [3] = package .. ".SC_Login"
    }
+   
    return {
-     cs = {
-       id = {
-   [10001] = p[1]
-   },
-       msg = {
-   ["Login"] = p[1]
-   },
-     msgToId = {
-   ["Login"] = 10001
-   }
-   },
-   sc ={
-       id = {
-   [10002] = p[2]
-   },
-       msg = {
-   ["Login"] = p[2]
-   },
-     msgToId = {
-   ["Login"] = 10002
-   }
-   }
+       cs = {
+           idToMsg = {
+               [10001] = m[1]
+           },
+           idToName = {
+               [10001] = "CS_Login"
+           },
+           nameToMsg = {
+               ["Login"] = m[1]
+           },
+           nameToId = {
+               ["Login"] = 10001
+           }
+       },
+       sc = {
+           idToMsg = {
+               [10002] = m[2]
+           },
+           idToName = {
+               [10002] = "SC_Login"
+           },
+           nameToMsg = {
+               ["Login"] = m[2]
+           },
+           nameToId = {
+               ["Login"] = 10002
+           }
+       }
    }
    ```
 
@@ -202,7 +209,7 @@
 
    ```lua
    Proto = require("protobuf/LuaProtoBuf")
-   local proto = require("Proto/Proto")
+   local proto = require("Proto/MsgIds")
    
    Proto:initialize({
        bytes = CS.UnityEngine.Resources.Load("Lua/Proto/Proto.pb", typeof(CS.UnityEngine.TextAsset)).bytes,
