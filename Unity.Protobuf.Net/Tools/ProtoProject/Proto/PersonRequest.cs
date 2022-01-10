@@ -16,7 +16,7 @@ namespace Example
         global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
             => global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
-        [global::ProtoBuf.ProtoMember(1)]
+        [global::ProtoBuf.ProtoMember(1, Name = @"id")]
         [global::System.ComponentModel.DefaultValue("")]
         public string Id { get; set; } = "";
 
@@ -29,15 +29,15 @@ namespace Example
         global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
             => global::ProtoBuf.Extensible.GetExtensionObject(ref __pbn__extensionData, createIfMissing);
 
-        [global::ProtoBuf.ProtoMember(1)]
+        [global::ProtoBuf.ProtoMember(1, Name = @"id")]
         [global::System.ComponentModel.DefaultValue("")]
         public string Id { get; set; } = "";
 
-        [global::ProtoBuf.ProtoMember(2)]
+        [global::ProtoBuf.ProtoMember(2, Name = @"name")]
         [global::System.ComponentModel.DefaultValue("")]
         public string Name { get; set; } = "";
 
-        [global::ProtoBuf.ProtoMember(3)]
+        [global::ProtoBuf.ProtoMember(3, Name = @"address")]
         [global::System.ComponentModel.DefaultValue("")]
         public string Address { get; set; } = "";
 

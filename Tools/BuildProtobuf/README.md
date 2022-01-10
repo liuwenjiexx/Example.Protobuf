@@ -52,7 +52,7 @@
 
   **样例**
 
-  `CS_XXX`，，使用名称为 `XXX`
+  `CS_XXX`，使用名称为 `XXX`
 
 - -netcsharp
 

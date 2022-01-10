@@ -3,11 +3,11 @@ package Example;
 
 
 message PersonRequest {
-  string Id = 1;
+  string id = 1;
 }
 
 message PersonResponse {
-  string Id = 1;
-  string Name = 2;
-  string Address = 3;
+  string id = 1;
+  string name = 2;
+  string address = 3;
 }
