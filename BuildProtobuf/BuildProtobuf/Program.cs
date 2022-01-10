@@ -35,10 +35,9 @@ namespace BuildProtobuf
         /// 正则表达式
         /// 参数：cs: 客户端到服务端消息，sc：服务端到客户端消息，name：使用的消息名称
         /// 无命名空间："([^\\.]+\\.)?(?<name>.*)$"
-        /// CS_msg, SC_msg: "(^|\\.)(((?<cs>CS)|(?<sc>SC))_)?(?<name>[^\\.]+)$"
-        /// msgRequest, msgResponse: "(^|\\.)(?<name>[^\\.]+?)((?<cs>Request)|(?<sc>Response))?$"
         /// </summary>
-        public static string MsgPattern = "(^|\\.)(((?<cs>CS)|(?<sc>SC))_)?(?<name>[^\\.]+)$";
+        public static string MsgCSPattern = "(^|\\.)((?<cs>CS)_(?<name>[^\\.]+)|(?<name>[^\\.]+)(?<cs>Request))$";
+        public static string MsgSCPattern = "(^|\\.)((?<sc>SC)_(?<name>[^\\.]+)|(?<name>[^\\.]+)(?<sc>Response))$";
 
 
         static void Main(string[] args)
@@ -50,7 +49,8 @@ namespace BuildProtobuf
                 TryGetArg(dic, "-source", ref SourceDir);
                 TryGetArg(dic, "-extension", ref Extension);
                 TryGetArg(dic, "-protoc", ref ProtocPath);
-                TryGetArg(dic, "-msg", ref MsgPattern);
+                TryGetArg(dic, "-msg_cs", ref MsgCSPattern);
+                TryGetArg(dic, "-msg_sc", ref MsgSCPattern);
                 TryGetArg(dic, "-msg_id_enum", ref MessageIDEnumNamePattern);
 
 
@@ -171,7 +171,7 @@ namespace BuildProtobuf
 
             List<ProtoMessageInfo> messages = new List<ProtoMessageInfo>();
             List<ProtoEnumInfo> enums = new List<ProtoEnumInfo>();
-            Console.WriteLine("Message pattern: " + MsgPattern);
+            Console.WriteLine("Message pattern: " + MsgCSPattern);
 
             foreach (var msg in FindProtoFiles(dir, filter))
             {
@@ -515,10 +515,14 @@ namespace BuildProtobuf
 
         public static IEnumerable<ProtoMessageInfo> Parse(ProtoPackageInfo package, string text)
         {
-            Regex msgRegex = null;
-            if (string.IsNullOrEmpty(Program.MsgPattern))
-                throw new Exception($"{nameof(Program.MsgPattern)} empty");
-            msgRegex = new Regex(Program.MsgPattern);
+            Regex msgCSRegex = null, msgSCRegex = null;
+            if (string.IsNullOrEmpty(Program.MsgCSPattern))
+                throw new Exception($"{nameof(Program.MsgCSPattern)} empty");
+            if (string.IsNullOrEmpty(Program.MsgSCPattern))
+                throw new Exception($"{nameof(Program.MsgSCPattern)} empty");
+
+            msgCSRegex = new Regex(Program.MsgCSPattern);
+            msgSCRegex = new Regex(Program.MsgSCPattern);
 
             foreach (Match m1 in regexMessage.Matches(text))
             {
@@ -538,14 +542,23 @@ namespace BuildProtobuf
                     msg.FullName = msg.Name;
                 }
 
-                var m2 = msgRegex.Match(msg.FullName);
-                if (m2.Groups["cs"].Success)
+                var m2 = msgCSRegex.Match(msg.FullName);
+                if (m2.Success)
                 {
                     msg.IsClientToServer = true;
                 }
-                else if (m2.Groups["sc"].Success)
+                else
                 {
-                    msg.IsClientToServer = false;
+                    m2 = msgSCRegex.Match(msg.FullName);
+                    if (m2.Success)
+                    {
+                        msg.IsClientToServer = false;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
                 }
 
                 msg.UsedName = m2.Groups["name"].Value;

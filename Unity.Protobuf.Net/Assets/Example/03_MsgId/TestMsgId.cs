@@ -6,15 +6,48 @@ using System.IO;
 using ProtoBuf;
 using System;
 using System.Net;
+using System.Text.RegularExpressions;
 
 public class TestMsgId : MonoBehaviour
 {
+    public void Register(Type enumIdType)
+    {
+        string prefix = "";
+        if (!string.IsNullOrEmpty(enumIdType.Namespace))
+        {
+            prefix = enumIdType.Namespace + ".";
+        }
+
+        foreach (var item in Enum.GetValues(enumIdType))
+        {
+            string typeName = prefix + item.ToString();
+            int id = (int)item;
+        }
+
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         Debug.Log($"Run test '{GetType().Name}'");
 
         Debug.Log("run Tools/Build_Proto_CSharp.bat generate [Proto.dll]");
+
+        var type2 = typeof(Example.MessageID);
+        foreach (var item in Enum.GetValues(type2))
+        {
+            Debug.Log(item.ToString() + " xxx");
+            Debug.Log((int)item + " xxx");
+        }
+
+        string name = "csMsg";
+        Regex regex = new Regex("((?<cs>cs)(?<name>.+)|(?<name>.+)(?<cs>Request))");
+        var m= regex.Match("csMsg");
+        Debug.Log(m.Success + "," + m.Groups["cs"].Value + ", " + m.Groups["name"].Value);
+        m = regex.Match("MsgRequest");
+        Debug.Log(m.Success + "," + m.Groups["cs"].Value + ", " + m.Groups["name"].Value);
+        m = regex.Match("scMsg");
+        Debug.Log(m.Success + "," + m.Groups["cs"].Value + ", " + m.Groups["name"].Value);
 
         byte[] data;
 
@@ -54,7 +87,7 @@ public class TestMsgId : MonoBehaviour
 
     }
 
-    
+
     public int ReadInt32(Stream stream)
     {
         byte[] bytes4 = new byte[4];

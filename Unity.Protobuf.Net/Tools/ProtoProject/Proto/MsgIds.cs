@@ -18,8 +18,10 @@ namespace Example
         {
             CS = new MsgIds();
             CS.Register(10001, typeof(CSLogin), "Login");
+            CS.Register(10003, typeof(PersonRequest), "Person");
 
             SC = new MsgIds();
+            SC.Register(10004, typeof(PersonResponse), "Person");
             SC.Register(10002, typeof(SCLogin), "Login");
         }
 

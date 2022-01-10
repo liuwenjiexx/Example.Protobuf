@@ -40,7 +40,7 @@ protogen -help
 
 ### 生成程序集
 
-运行 `Build_Proto_CSharp.bat` 命令
+运行 `Build_Proto_NetCSharp_Assembly.bat` 命令
 
 **参数**
 
@@ -54,7 +54,7 @@ protogen -help
 
 ### 只生成代码
 
-运行 `Build_Proto_CSharp_Code.bat` 命令
+运行 `Build_Proto_NetCSharp.bat` 命令
 
 **参数**
 

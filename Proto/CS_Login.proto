@@ -1,11 +1,6 @@
 syntax = "proto3";
 package Example;
 
-enum MessageID {
-  CS_Login = 10001;
-  SC_Login = 10002;
-}
-
 message CS_Login {
   string userName = 1;
   string userPwd = 2;

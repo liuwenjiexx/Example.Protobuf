@@ -26,29 +26,33 @@
 
   默认 `MessageID`，正则表达式格式，消息ID枚举名称
 
-- -msg
+- -msg_cs
 
-  消息名称格式，正则表达式格式，正则返回值：`name` 为程序使用的名称，`cs` 为客户端到服务端消息，`sc` 为服务端到客户端消息
+  客户端到服务端消息名称格式，正则表达式格式，正则返回值：`name` 为程序使用的名称，`cs` 为条件
+
+  **默认值**
+
+  ```tex
+(^|\\.)((?<cs>CS)_(?<name>[^\\.]+)|(?<name>[^\\.]+)(?<cs>Request))$
+  ```
+  
+  支持格式：`CS_XXX`，`XXXRequest`
+
+- -msg_sc
+
+  服务端到客户端消息名称格式，正则表达式格式，正则返回值：`name` 为程序使用的名称，`sc` 为条件
+
+  **默认值**
+
+  ```tex
+  (^|\\.)((?<sc>SC)_(?<name>[^\\.]+)|(?<name>[^\\.]+)(?<sc>Response))$
+  ```
+
+  支持格式：`SC_XXX`，`XXXResponse`
 
   **样例**
 
-  `CS_XXX`，`SC_XXX`，使用名称为 `XXX`
-
-  ```tex
-  (^|\.)(((?<cs>CS)|(?<sc>SC))_)?(?<name>[^\.]+)$
-  ```
-
-  `XXXRequest`, `XXXResponse`，使用名称为 `XXX`
-
-  ```tex
-  (^|\.)(?<name>[^\.]+?)((?<cs>Request)|(?<sc>Response))?$
-  ```
-
-  `package.XXX`，使用名称为 `XXX`
-
-  ```tex
-  ([^\.]+\.)?(?<name>.*)$
-  ```
+  `CS_XXX`，，使用名称为 `XXX`
 
 - -netcsharp
 

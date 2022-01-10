@@ -1,0 +1,13 @@
+syntax = "proto3";
+package Example;
+
+
+message PersonRequest {
+  string Id = 1;
+}
+
+message PersonResponse {
+  string Id = 1;
+  string Name = 2;
+  string Address = 3;
+}
